@@ -11,30 +11,42 @@ namespace CalculateurAge.ViewModels;
 /// </summary>
 public sealed class CalculateurViewModel : BaseViewModel
 {
+	private const int EtapeFormulaire = 1;
+	private const int EtapeResultat = 2;
+
 	private readonly INavigationService _navigation;
 
 	private string _nom = string.Empty;
-	private DateTime _dateNaissance = DateTime.Today.AddYears(-20);
+	private DateTime _dateNaissance = DateTime.Today;
 	private string _resultat = string.Empty;
 	private bool _resultatVisible;
 	private string _message = string.Empty;
 	private bool _messageVisible;
+	private string _champsRestants = string.Empty;
+	private bool _champsRestantsVisible;
 	private int _age;
+	private int _etape = EtapeFormulaire;
 
 	public CalculateurViewModel(INavigationService navigation)
 	{
 		_navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
 
-		// Le bouton Calculer se grise tant que le nom est vide, et se réactive dès
-		// la première lettre : CanExecute est réévalué par Rafraichir.
-		CalculerCommand = new RelayCommand(Calculer, () => !string.IsNullOrWhiteSpace(Nom));
+		// Le bouton Calculer se grise tant qu'un champ manque, et se réactive dès
+		// que la saisie est complète : CanExecute est réévalué par Rafraichir.
+		CalculerCommand = new RelayCommand(Calculer, () => FormulaireValide);
 
 		// Activité 6 : une commande écrit dans la propriété Message, affichée par
 		// un Label. Aucune ligne d'interface dans ce fichier.
 		MessageCommand = new RelayCommand(AfficherMessage);
 
 		// Activité 6 : remise à zéro de tous les champs.
-		ResetCommand = new RelayCommand(Reinitialiser, () => ResultatVisible || MessageVisible);
+		ResetCommand = new RelayCommand(
+			Reinitialiser,
+			() => ResultatVisible || MessageVisible || ChampsRestantsVisible);
+
+		// Activité 6 : affiche le nom des champs restants, puis passe à l'étape
+		// suivante lorsque plus rien ne manque.
+		SuivantCommand = new AsyncRelayCommand(SuivantAsync);
 
 		// Ouvre la page de résultat en passant le nom et l'âge en paramètres
 		// d'URL (routing du Shell).
@@ -60,11 +72,20 @@ public sealed class CalculateurViewModel : BaseViewModel
 		}
 	}
 
-	/// <summary>Date de naissance choisie dans le DatePicker.</summary>
+	/// <summary>
+	/// Date de naissance choisie dans le DatePicker. Tant qu'elle vaut aujourd'hui
+	/// ou est dans le futur, le champ est considéré comme non renseigné.
+	/// </summary>
 	public DateTime DateNaissance
 	{
 		get => _dateNaissance;
-		set => SetField(ref _dateNaissance, value);
+		set
+		{
+			if (SetField(ref _dateNaissance, value))
+			{
+				CalculerCommand.Rafraichir();
+			}
+		}
 	}
 
 	/// <summary>Phrase affichée à l'écran, calculée par la commande.</summary>
@@ -110,6 +131,29 @@ public sealed class CalculateurViewModel : BaseViewModel
 		}
 	}
 
+	/// <summary>
+	/// Nom des champs qui manquent encore, écrit par <see cref="SuivantCommand"/>
+	/// juste avant de tenter l'étape suivante.
+	/// </summary>
+	public string ChampsRestants
+	{
+		get => _champsRestants;
+		private set => SetField(ref _champsRestants, value);
+	}
+
+	/// <summary>Commande l'affichage de la liste des champs restants.</summary>
+	public bool ChampsRestantsVisible
+	{
+		get => _champsRestantsVisible;
+		private set
+		{
+			if (SetField(ref _champsRestantsVisible, value))
+			{
+				ResetCommand.Rafraichir();
+			}
+		}
+	}
+
 	/// <summary>Âge calculé, en années pleines.</summary>
 	public int Age
 	{
@@ -117,13 +161,37 @@ public sealed class CalculateurViewModel : BaseViewModel
 		private set => SetField(ref _age, value);
 	}
 
+	/// <summary>Numéro de l'étape courante.</summary>
+	public int Etape
+	{
+		get => _etape;
+		private set
+		{
+			if (SetField(ref _etape, value))
+			{
+				OnPropertyChanged(nameof(Progression));
+			}
+		}
+	}
+
+	/// <summary>Intitulé de l'étape courante, affiché en haut du formulaire.</summary>
+	public string Progression => Etape == EtapeResultat
+		? $"Étape {Etape} sur 2 — Résultat"
+		: $"Étape {Etape} sur 2 — Saisie";
+
 	public RelayCommand CalculerCommand { get; }
 
 	public RelayCommand MessageCommand { get; }
 
 	public RelayCommand ResetCommand { get; }
 
+	public AsyncRelayCommand SuivantCommand { get; }
+
 	public AsyncRelayCommand FicheCommand { get; }
+
+	/// <summary>Vrai quand les deux champs du formulaire sont exploitables.</summary>
+	private bool FormulaireValide =>
+		!string.IsNullOrWhiteSpace(Nom) && DateNaissance.Date < DateTime.Today;
 
 	// ------------------------------------------------------------------
 	// Logique métier
@@ -131,6 +199,14 @@ public sealed class CalculateurViewModel : BaseViewModel
 
 	private void Calculer()
 	{
+		if (!FormulaireValide)
+		{
+			Message = $"Complétez avant de calculer : {string.Join(", ", GetChampsRestants())}.";
+			MessageVisible = true;
+
+			return;
+		}
+
 		Age = CalculerAge(DateNaissance);
 		Resultat = $"{Nom}, vous avez {Age} ans";
 		ResultatVisible = true;
@@ -149,12 +225,43 @@ public sealed class CalculateurViewModel : BaseViewModel
 	private void Reinitialiser()
 	{
 		Nom = string.Empty;
-		DateNaissance = DateTime.Today.AddYears(-20);
+		DateNaissance = DateTime.Today;
 		Age = 0;
+		Etape = EtapeFormulaire;
 		Resultat = string.Empty;
 		ResultatVisible = false;
 		Message = string.Empty;
 		MessageVisible = false;
+		ChampsRestants = string.Empty;
+		ChampsRestantsVisible = false;
+	}
+
+	/// <summary>
+	/// Affiche le nom des champs restants. Si plus rien ne manque, le calcul est
+	/// lancé et l'étape suivante — la page de résultat — est atteinte.
+	/// </summary>
+	private async Task SuivantAsync()
+	{
+		IReadOnlyList<string> restants = GetChampsRestants();
+
+		ChampsRestants = restants.Count == 0
+			? "Tous les champs sont renseignés."
+			: $"Champs restants : {string.Join(", ", restants)}.";
+
+		ChampsRestantsVisible = true;
+
+		if (restants.Count > 0)
+		{
+			Message = $"Complétez {string.Join(" et ", restants)} avant de passer à l'étape suivante.";
+			MessageVisible = true;
+
+			return;
+		}
+
+		Calculer();
+		Etape = EtapeResultat;
+
+		await OuvrirFicheAsync();
 	}
 
 	private async Task OuvrirFicheAsync()
@@ -163,6 +270,24 @@ public sealed class CalculateurViewModel : BaseViewModel
 		string age = Uri.EscapeDataString(Age.ToString(CultureInfo.InvariantCulture));
 
 		await _navigation.AllerAsync($"{nameof(ResultatPage)}?nom={nom}&age={age}");
+	}
+
+	/// <summary>Champs du formulaire dont la valeur n'est pas encore exploitable.</summary>
+	private IReadOnlyList<string> GetChampsRestants()
+	{
+		List<string> restants = new(2);
+
+		if (string.IsNullOrWhiteSpace(Nom))
+		{
+			restants.Add("Nom");
+		}
+
+		if (DateNaissance.Date >= DateTime.Today)
+		{
+			restants.Add("Date de naissance");
+		}
+
+		return restants;
 	}
 
 	/// <summary>

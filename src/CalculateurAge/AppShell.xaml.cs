@@ -8,7 +8,7 @@ public partial class AppShell : Shell
 	{
 		InitializeComponent();
 
-		// Déclare la route sans cette ligne, GoToAsync lève une exception
+		// Déclare la route : sans cette ligne, GoToAsync lève une exception
 		// « route inconnue ».
 		Routing.RegisterRoute(nameof(ResultatPage), typeof(ResultatPage));
 	}

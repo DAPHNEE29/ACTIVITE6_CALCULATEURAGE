@@ -13,6 +13,9 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="12">
 
+            <Label Text="{Binding Progression}"
+                   FontSize="12" />
+
             <Label Text="Nom" FontSize="16" />
             <Entry Placeholder="Votre nom"
                    Text="{Binding Nom, Mode=TwoWay}" />
@@ -26,6 +29,12 @@
             <Label Text="{Binding Resultat}"
                    FontSize="20"
                    IsVisible="{Binding ResultatVisible}" />
+
+            <Button Text="Suivant"
+                    Command="{Binding SuivantCommand}" />
+
+            <Label Text="{Binding ChampsRestants}"
+                   IsVisible="{Binding ChampsRestantsVisible}" />
 
             <Button Text="Fiche détaillée"
                     Command="{Binding FicheCommand}"
