@@ -1,37 +1,33 @@
+using CalculateurAge.ViewModels;
+using Microsoft.Maui.Controls;
+
 namespace CalculateurAge.Views;
 
-/// <summary>
-/// Relie les paramètres "nom" et "age" de l'URL de navigation aux propriétés
-/// homonymes. L'attribut se pose sur la classe, pas sur les propriétés.
-/// </summary>
-[QueryProperty(nameof(Nom), "nom")]
-[QueryProperty(nameof(Age), "age")]
 public partial class ResultatPage : ContentPage, IQueryAttributable
 {
-	// Ces propriétés sont remplies par la navigation.
-	public string Nom { get; set; } = string.Empty;
+	private readonly ResultatPageViewModel _viewModel;
 
-	public string Age { get; set; } = string.Empty;
-
-	public ResultatPage()
+	public ResultatPage(ResultatPageViewModel viewModel)
 	{
 		InitializeComponent();
+
+		_viewModel = viewModel;
+		BindingContext = viewModel;
 	}
 
-	public void ApplyQueryAttributes(IDictionary<string, object> query)
-	{
-		// Les propriétés ci-dessus sont déjà remplies par le Shell.
-	}
+	/// <summary>
+	/// Le Shell dépose ici les paramètres de l'URL de navigation. La page se
+	/// contente de les transmettre à son ViewModel : l'analyse des paramètres et
+	/// la mise en forme restent dans le ViewModel.
+	/// </summary>
+	public void ApplyQueryAttributes(IDictionary<string, object> query) =>
+		_viewModel.ApplyQueryAttributes(query);
 
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
 
-		// Appelé à chaque affichage de la page : le message n'est pas construit
-		// dans le constructeur.
-		lblMessage.Text = $"{Nom}, vous avez {Age} ans";
+		// Appelé à chaque affichage de la page, et non dans le constructeur.
+		_viewModel.Rafraichir();
 	}
-
-	private async void OnRetourClicked(object? sender, EventArgs e) =>
-		await Shell.Current.GoToAsync("..");
 }

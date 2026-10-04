@@ -1,30 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CalculateurAge.ViewModels"
+             x:DataType="vm:CalculateurViewModel"
              x:Class="CalculateurAge.MainPage"
              Title="Calculateur">
 
     <!--
-        Phase A : version code-behind. Les contrôles portent un x:Name et le
-        bouton est câblé à un gestionnaire d'événement. C'est exactement ce que
-        la phase C va supprimer.
+        Phase C : plus un seul x:Name, plus un seul Clicked. Tout passe par des
+        {Binding} et des Command.
     -->
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="12">
 
             <Label Text="Nom" FontSize="16" />
-            <Entry x:Name="entryNom" Placeholder="Votre nom" />
+            <Entry Placeholder="Votre nom"
+                   Text="{Binding Nom, Mode=TwoWay}" />
 
             <Label Text="Date de naissance" FontSize="16" />
-            <DatePicker x:Name="pickerDate" />
+            <DatePicker Date="{Binding DateNaissance}" />
 
-            <Button x:Name="btnCalculer"
-                    Text="Calculer"
-                    Clicked="OnCalculerClicked" />
+            <Button Text="Calculer"
+                    Command="{Binding CalculerCommand}" />
 
-            <Label x:Name="lblResultat"
+            <Label Text="{Binding Resultat}"
                    FontSize="20"
-                   IsVisible="False" />
+                   IsVisible="{Binding ResultatVisible}" />
+
+            <Button Text="Fiche détaillée"
+                    Command="{Binding FicheCommand}"
+                    IsVisible="{Binding ResultatVisible}" />
 
         </VerticalStackLayout>
     </ScrollView>

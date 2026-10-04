@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CalculateurAge.ViewModels"
+             x:DataType="vm:ResultatPageViewModel"
              x:Class="CalculateurAge.Views.ResultatPage"
              Title="Résultat">
 
     <ScrollView>
         <VerticalStackLayout Padding="28" Spacing="16">
 
-            <Label x:Name="lblMessage" FontSize="22" />
+            <Label Text="Fiche du calcul"
+                   FontSize="22"
+                   FontAttributes="Bold" />
 
-            <Button Text="Retour" Clicked="OnRetourClicked" />
+            <Border Padding="16"
+                    StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Nom" FontSize="12" />
+                    <Label Text="{Binding Nom}" FontSize="20" />
+                    <Label Text="Âge" FontSize="12" />
+                    <Label Text="{Binding AgeLibelle}" FontSize="20" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding Repere}" />
+
+            <Button Text="Retour"
+                    Command="{Binding RetourCommand}" />
 
         </VerticalStackLayout>
     </ScrollView>
