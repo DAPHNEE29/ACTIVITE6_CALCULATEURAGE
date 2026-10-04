@@ -5,9 +5,9 @@ using System.Globalization;
 namespace CalculateurAge.ViewModels;
 
 /// <summary>
-/// Contient l'état de l'écran et les actions possibles. Ni Label, ni Entry, ni
-/// Button, ni DisplayAlert : si un de ces mots apparaît ici, ce n'est pas du
-/// MVVM.
+/// Contient l'état de l'écran et les actions possibles. Ni <c>Label</c>, ni
+/// <c>Entry</c>, ni <c>Button</c>, ni <c>DisplayAlert</c> : si un de ces mots
+/// apparaît ici, ce n'est pas du MVVM.
 /// </summary>
 public sealed class CalculateurViewModel : BaseViewModel
 {
@@ -29,13 +29,22 @@ public sealed class CalculateurViewModel : BaseViewModel
 		// la première lettre : CanExecute est réévalué par Rafraichir.
 		CalculerCommand = new RelayCommand(Calculer, () => !string.IsNullOrWhiteSpace(Nom));
 
-		// Une commande écrit dans la propriété Message, qu'un simple Label affiche.
+		// Activité 6 : une commande écrit dans la propriété Message, affichée par
+		// un Label. Aucune ligne d'interface dans ce fichier.
 		MessageCommand = new RelayCommand(AfficherMessage);
+
+		// Activité 6 : remise à zéro de tous les champs.
+		ResetCommand = new RelayCommand(Reinitialiser, () => ResultatVisible || MessageVisible);
 
 		// Ouvre la page de résultat en passant le nom et l'âge en paramètres
 		// d'URL (routing du Shell).
 		FicheCommand = new AsyncRelayCommand(OuvrirFicheAsync, () => ResultatVisible);
 	}
+
+	// ------------------------------------------------------------------
+	// Champs privés : la vraie donnée.
+	// Propriétés publiques : ce que le XAML voit.
+	// ------------------------------------------------------------------
 
 	/// <summary>Nom saisi, en lecture depuis l'Entry en mode TwoWay.</summary>
 	public string Nom
@@ -73,16 +82,9 @@ public sealed class CalculateurViewModel : BaseViewModel
 		{
 			if (SetField(ref _resultatVisible, value))
 			{
-				FicheCommand.Rafraichir();
+				RafraichirCommandes();
 			}
 		}
-	}
-
-	/// <summary>Âge calculé, en années pleines.</summary>
-	public int Age
-	{
-		get => _age;
-		private set => SetField(ref _age, value);
 	}
 
 	/// <summary>
@@ -99,12 +101,27 @@ public sealed class CalculateurViewModel : BaseViewModel
 	public bool MessageVisible
 	{
 		get => _messageVisible;
-		private set => SetField(ref _messageVisible, value);
+		private set
+		{
+			if (SetField(ref _messageVisible, value))
+			{
+				RafraichirCommandes();
+			}
+		}
+	}
+
+	/// <summary>Âge calculé, en années pleines.</summary>
+	public int Age
+	{
+		get => _age;
+		private set => SetField(ref _age, value);
 	}
 
 	public RelayCommand CalculerCommand { get; }
 
 	public RelayCommand MessageCommand { get; }
+
+	public RelayCommand ResetCommand { get; }
 
 	public AsyncRelayCommand FicheCommand { get; }
 
@@ -129,6 +146,17 @@ public sealed class CalculateurViewModel : BaseViewModel
 		MessageVisible = true;
 	}
 
+	private void Reinitialiser()
+	{
+		Nom = string.Empty;
+		DateNaissance = DateTime.Today.AddYears(-20);
+		Age = 0;
+		Resultat = string.Empty;
+		ResultatVisible = false;
+		Message = string.Empty;
+		MessageVisible = false;
+	}
+
 	private async Task OuvrirFicheAsync()
 	{
 		string nom = Uri.EscapeDataString(Nom);
@@ -151,5 +179,12 @@ public sealed class CalculateurViewModel : BaseViewModel
 		}
 
 		return age;
+	}
+
+	/// <summary>Les commandes concernées doivent reposeur la question à CanExecute.</summary>
+	private void RafraichirCommandes()
+	{
+		ResetCommand.Rafraichir();
+		FicheCommand.Rafraichir();
 	}
 }

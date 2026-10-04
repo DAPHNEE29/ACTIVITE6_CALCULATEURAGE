@@ -7,8 +7,8 @@
              Title="Calculateur">
 
     <!--
-        Phase C : plus un seul x:Name, plus un seul Clicked. Tout passe par des
-        {Binding} et des Command.
+        Aucun x:Name, aucun Clicked : tout passe par des {Binding}.
+        Les boutons ne sont liés qu'à des Command, jamais à des gestionnaires.
     -->
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="12">
@@ -36,6 +36,9 @@
 
             <Label Text="{Binding Message}"
                    IsVisible="{Binding MessageVisible}" />
+
+            <Button Text="Réinitialiser"
+                    Command="{Binding ResetCommand}" />
 
         </VerticalStackLayout>
     </ScrollView>
