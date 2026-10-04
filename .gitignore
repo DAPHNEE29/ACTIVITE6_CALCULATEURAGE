@@ -1,0 +1,25 @@
+# Build
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.binlog
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+project.assets.json
+
+# Fichiers parasites
+.DS_Store
+Thumbs.db

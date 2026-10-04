@@ -1,0 +1,33 @@
+# Normalise les fins de ligne pour que le diff reste lisible sur toutes les
+# machines, Windows comme macOS et Linux.
+* text=auto
+
+# Fichiers Windows : fins de ligne CRLF obligatoires.
+*.sln text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Sources : LF en depot, conversion automatique a l'extraction.
+*.cs text diff=csharp
+*.xaml text
+*.csproj text
+*.props text
+*.targets text
+*.md text
+*.json text
+*.xml text
+*.yml text
+
+# Fichiers binaires : jamais de conversion ni de diff.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.apk binary
+*.aab binary
+*.exe binary
