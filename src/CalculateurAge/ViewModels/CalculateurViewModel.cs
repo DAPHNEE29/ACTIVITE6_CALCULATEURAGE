@@ -17,6 +17,8 @@ public sealed class CalculateurViewModel : BaseViewModel
 	private DateTime _dateNaissance = DateTime.Today.AddYears(-20);
 	private string _resultat = string.Empty;
 	private bool _resultatVisible;
+	private string _message = string.Empty;
+	private bool _messageVisible;
 	private int _age;
 
 	public CalculateurViewModel(INavigationService navigation)
@@ -26,6 +28,9 @@ public sealed class CalculateurViewModel : BaseViewModel
 		// Le bouton Calculer se grise tant que le nom est vide, et se réactive dès
 		// la première lettre : CanExecute est réévalué par Rafraichir.
 		CalculerCommand = new RelayCommand(Calculer, () => !string.IsNullOrWhiteSpace(Nom));
+
+		// Une commande écrit dans la propriété Message, qu'un simple Label affiche.
+		MessageCommand = new RelayCommand(AfficherMessage);
 
 		// Ouvre la page de résultat en passant le nom et l'âge en paramètres
 		// d'URL (routing du Shell).
@@ -80,7 +85,26 @@ public sealed class CalculateurViewModel : BaseViewModel
 		private set => SetField(ref _age, value);
 	}
 
+	/// <summary>
+	/// Message d'aide, produit par <see cref="MessageCommand"/> et affiché par un
+	/// simple Label lié à cette propriété.
+	/// </summary>
+	public string Message
+	{
+		get => _message;
+		private set => SetField(ref _message, value);
+	}
+
+	/// <summary>Commande l'affichage du message.</summary>
+	public bool MessageVisible
+	{
+		get => _messageVisible;
+		private set => SetField(ref _messageVisible, value);
+	}
+
 	public RelayCommand CalculerCommand { get; }
+
+	public RelayCommand MessageCommand { get; }
 
 	public AsyncRelayCommand FicheCommand { get; }
 
@@ -93,6 +117,16 @@ public sealed class CalculateurViewModel : BaseViewModel
 		Age = CalculerAge(DateNaissance);
 		Resultat = $"{Nom}, vous avez {Age} ans";
 		ResultatVisible = true;
+	}
+
+	private void AfficherMessage()
+	{
+		Message = ResultatVisible
+			? $"{Nom}, né(e) le {DateNaissance:dd/MM/yyyy}, vous avez {Age} ans aujourd'hui. "
+				+ "Le bouton « Fiche détaillée » ouvre la page de résultat via le routing du Shell."
+			: "Renseignez votre nom et votre date de naissance, puis appuyez sur Calculer.";
+
+		MessageVisible = true;
 	}
 
 	private async Task OuvrirFicheAsync()

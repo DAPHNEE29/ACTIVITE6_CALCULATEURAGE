@@ -31,6 +31,12 @@
                     Command="{Binding FicheCommand}"
                     IsVisible="{Binding ResultatVisible}" />
 
+            <Button Text="Message"
+                    Command="{Binding MessageCommand}" />
+
+            <Label Text="{Binding Message}"
+                   IsVisible="{Binding MessageVisible}" />
+
         </VerticalStackLayout>
     </ScrollView>
 
