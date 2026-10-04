@@ -7,12 +7,12 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
-	private void OnCalculerClicked(object? sender, EventArgs e)
+	private async void OnCalculerClicked(object? sender, EventArgs e)
 	{
 		// Validation : on refuse un nom vide.
 		if (string.IsNullOrWhiteSpace(entryNom.Text))
 		{
-			DisplayAlert("Erreur", "Entrez un nom", "OK");
+			await DisplayAlert("Erreur", "Entrez un nom", "OK");
 
 			return; // on sort sans rien calculer
 		}
@@ -27,9 +27,9 @@ public partial class MainPage : ContentPage
 			age--;
 		}
 
-		// On écrit DIRECTEMENT dans les contrôles : c'est précisément ce que le
-		// MVVM va supprimer.
-		lblResultat.Text = $"{entryNom.Text}, vous avez {age} ans";
-		lblResultat.IsVisible = true;
+		// Phase B : le résultat est transporté dans l'URL de navigation.
+		string nom = Uri.EscapeDataString(entryNom.Text);
+
+		await Shell.Current.GoToAsync($"{nameof(Views.ResultatPage)}?nom={nom}&age={age}");
 	}
 }
