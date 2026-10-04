@@ -160,17 +160,3 @@ dotnet build src/CalculateurAge/CalculateurAge.csproj -f net9.0-android -t:Run
 > La cible Android n'est pas concernée.
 
 ---
-
-## 6. Scénario de démonstration (vidéo de 30 s)
-
-1. L'écran s'ouvre sur « Étape 1 sur 2 — Saisie », **Calculer** est grisé.
-2. On tape un nom → on appuie sur **Suivant** → « Champs restants : Date de
-   naissance. »
-3. On choisit une date de naissance, on appuie sur **Calculer** →
-   « *Daphnée, vous avez 29 ans* » apparaît.
-4. On appuie sur **Suivant** → « Tous les champs sont renseignés. », l'étape
-   passe à « Étape 2 sur 2 — Résultat » et la page de résultat s'ouvre avec le
-   nom et l'âge reçus par le routing. **Retour** ramène à l'accueil.
-5. On appuie sur **Message** → le message contextuel s'affiche.
-6. On appuie sur **Réinitialiser** → tout revient à l'étape 1 et les boutons
-   se grisent.
